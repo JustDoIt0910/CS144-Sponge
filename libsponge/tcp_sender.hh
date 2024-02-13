@@ -26,11 +26,38 @@ class TCPSender {
     //! retransmission timer for the connection
     unsigned int _initial_retransmission_timeout;
 
+    unsigned int _rto;
+
+    unsigned int _time{0};
+
+    unsigned int _consecutive_retransmission{0};
+
     //! outgoing stream of bytes that have not yet been sent
     ByteStream _stream;
 
     //! the (absolute) sequence number for the next byte to be sent
     uint64_t _next_seqno{0};
+
+    uint16_t _window_size{1};
+
+    struct InflightSegment {
+        uint64_t _abs_seq;
+
+        TCPSegment _segment;
+
+        InflightSegment(uint64_t abs_seq, const TCPSegment& segment):
+        _abs_seq(abs_seq), _segment(segment) {}
+    };
+
+    std::deque<InflightSegment> _inflight_segments;
+
+    size_t _inflight_bytes{0};
+
+    bool _syn_sent{false};
+
+    bool _fin_sent{false};
+
+    uint64_t _abs_ack{0};
 
   public:
     //! Initialize a TCPSender
